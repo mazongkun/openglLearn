@@ -1,7 +1,9 @@
 package opengllearn.opengllearn;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.opengl.GLES20;
+import android.opengl.GLUtils;
 import android.util.Log;
 
 import java.io.BufferedReader;
@@ -36,6 +38,14 @@ public class Utils {
         catch (IOException e)
         {
             return null;
+        } finally {
+            try {
+                bufferedReader.close();
+                inputStreamReader.close();
+                inputStream.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
 
         return body.toString();
@@ -122,5 +132,36 @@ public class Utils {
         }
 
         return programHandle;
+    }
+
+    public static int gen2DTexture(int textureID, Bitmap bitmap, boolean init) {
+        int tID;
+        if (textureID < 0) {
+            int []texID = new int[1];
+            GLES20.glGenTextures(1, texID, 0);
+            GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, texID[0]);
+            tID = texID[0];
+
+            GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER,
+                    GLES20.GL_LINEAR);
+            GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER,
+                    GLES20.GL_LINEAR);
+
+            GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S,
+                    GLES20.GL_CLAMP_TO_EDGE);
+            GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T,
+                    GLES20.GL_CLAMP_TO_EDGE);
+            GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, bitmap, 0);
+        } else {
+            GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureID);
+            if (init) {
+                GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, bitmap, 0);
+            } else {
+                GLUtils.texSubImage2D(GLES20.GL_TEXTURE_2D, 0, 0, 0, bitmap);
+            }
+            tID = textureID;
+        }
+        bitmap.recycle();
+        return tID;
     }
 }
