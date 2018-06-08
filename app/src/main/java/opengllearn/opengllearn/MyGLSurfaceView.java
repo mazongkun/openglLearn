@@ -2,16 +2,18 @@ package opengllearn.opengllearn;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.SurfaceTexture;
+import android.graphics.drawable.Drawable;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
-import android.opengl.GLUtils;
+import android.os.Build;
+import android.support.annotation.RequiresApi;
 import android.util.AttributeSet;
 import android.util.Log;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
+import java.util.ArrayList;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -42,6 +44,12 @@ public class MyGLSurfaceView extends GLSurfaceView implements GLSurfaceView.Rend
     float posY;
 
     private final float[] mScreenVerticesData = {
+            -1f, -1f,
+            1f, -1f,
+            -1f, 1f,
+            1f, 1f
+    };
+    private final float[] mEdgeVerticesData = {
             -1f, -1f,
             1f, -1f,
             -1f, 1f,
@@ -133,6 +141,8 @@ public class MyGLSurfaceView extends GLSurfaceView implements GLSurfaceView.Rend
 
             GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4);
 //            mSurfaceTexture.updateTexImage();
+
+            drawCircle();
         }
     }
 
@@ -159,6 +169,37 @@ public class MyGLSurfaceView extends GLSurfaceView implements GLSurfaceView.Rend
                     mScreenVerticesData[i] * posX : mScreenVerticesData[i] * posY;
         }
         verticesBuf.put(mVerticesData).position(0);
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+    public void drawCircle() {
+        Drawable drawable = getContext().getResources().getDrawable(R.drawable.oval_edge, null);
+        Bitmap centerBitmap = BitmapUtil.getBitmapWithDrawable(drawable);
+
+        mTexID = Utils.gen2DTexture(mTexID, centerBitmap, false);
+
+        GLES20.glVertexAttribPointer(glPositionHandler, 2,
+                GLES20.GL_FLOAT, false, 0, verticesBuf);
+        GLES20.glEnableVertexAttribArray(glPositionHandler);
+        GLES20.glVertexAttribPointer(glCoordinateHandler, 2,
+                GLES20.GL_FLOAT, false, 0, texCoordsBuf);
+        GLES20.glEnableVertexAttribArray(glCoordinateHandler);
+
+        GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
+        GLES20.glUniform1i(glTextureHandler, 0);
+
+
+
+//        GLES20.glBlendFunc(GL10.GL_SRC_ALPHA, GL10.GL_ONE_MINUS_SRC_ALPHA);
+        GLES20.glBlendFunc(GL10.GL_ONE, GL10.GL_ONE_MINUS_SRC_ALPHA);
+        GLES20.glEnable(GL10.GL_BLEND);
+
+//        GLES20.glEnable(GL10.GL_DEPTH_TEST);
+//        GLES20.glEnable(GL10.GL_ALPHA_TEST);  // Enable Alpha Testing (To Make BlackTansparent)
+
+//        GLES20.glFun  glAlphaFunc(GL10.GL_GREATER,0.1f);  // Set Alpha Testing (To Make Black Transparent)
+
+        GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4);
     }
 
     public void setBitmap(Bitmap bitmap) {
