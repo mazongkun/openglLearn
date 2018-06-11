@@ -9,11 +9,13 @@ import android.os.Build;
 import android.support.annotation.RequiresApi;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.MotionEvent;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
+import java.util.Iterator;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -23,6 +25,7 @@ public class MyGLSurfaceView extends GLSurfaceView implements GLSurfaceView.Rend
     String fragmentShader;
 
     int mTexID = -1;
+    int mCircleTexID = -1;
 
     int programHandler;
     int vecShaderHandler;
@@ -32,6 +35,7 @@ public class MyGLSurfaceView extends GLSurfaceView implements GLSurfaceView.Rend
     int glCoordinateHandler;
     int glTextureHandler;
 
+    private FloatBuffer circleVerticesBuf;
     private FloatBuffer verticesBuf;
     private FloatBuffer texCoordsBuf;
 
@@ -43,13 +47,17 @@ public class MyGLSurfaceView extends GLSurfaceView implements GLSurfaceView.Rend
     float posX;
     float posY;
 
+    float eyeWidth;
+    float eyeHeight;
+    float[] lastEyePos = new float[4*2];
+
     private final float[] mScreenVerticesData = {
             -1f, -1f,
             1f, -1f,
             -1f, 1f,
             1f, 1f
     };
-    private final float[] mEdgeVerticesData = {
+    private final float[] mCircleVerticesData = {
             -1f, -1f,
             1f, -1f,
             -1f, 1f,
@@ -171,15 +179,47 @@ public class MyGLSurfaceView extends GLSurfaceView implements GLSurfaceView.Rend
         verticesBuf.put(mVerticesData).position(0);
     }
 
+    boolean init = true;
+    private void positionCircle() {
+        if (! init)
+            return;
+init =false;
+        float showRatio = 150f/1080;
+        int width = mBitmap.getWidth();
+        int height = mBitmap.getHeight();
+
+        if (width < height) {
+            eyeWidth  = 2 * showRatio;
+            eyeHeight = eyeWidth * height / width;
+            for (int i=0; i<mCircleVerticesData.length; i++) {
+                mCircleVerticesData[i] = (i%2==0) ?
+                        showRatio * mVerticesData[i] : showRatio * mVerticesData[i]*width/height;
+            }
+        } else {
+            eyeHeight = 2 * showRatio;
+            eyeWidth  = eyeHeight * width / height;
+            for (int i=0; i<mCircleVerticesData.length; i++) {
+                mCircleVerticesData[i] = (i%2==1) ?
+                        showRatio * mVerticesData[i] : showRatio * mVerticesData[i]*height/width;
+            }
+        }
+
+    }
+
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     public void drawCircle() {
+        positionCircle();
         Drawable drawable = getContext().getResources().getDrawable(R.drawable.oval_edge, null);
         Bitmap centerBitmap = BitmapUtil.getBitmapWithDrawable(drawable);
 
-        mTexID = Utils.gen2DTexture(mTexID, centerBitmap, false);
+        mCircleTexID = Utils.gen2DTexture(mCircleTexID, centerBitmap, false);
+
+        circleVerticesBuf = ByteBuffer.allocateDirect(mCircleVerticesData.length*4)
+                .order(ByteOrder.nativeOrder()).asFloatBuffer();
+        circleVerticesBuf.put(mCircleVerticesData).position(0);
 
         GLES20.glVertexAttribPointer(glPositionHandler, 2,
-                GLES20.GL_FLOAT, false, 0, verticesBuf);
+                GLES20.GL_FLOAT, false, 0, circleVerticesBuf);
         GLES20.glEnableVertexAttribArray(glPositionHandler);
         GLES20.glVertexAttribPointer(glCoordinateHandler, 2,
                 GLES20.GL_FLOAT, false, 0, texCoordsBuf);
@@ -204,5 +244,71 @@ public class MyGLSurfaceView extends GLSurfaceView implements GLSurfaceView.Rend
 
     public void setBitmap(Bitmap bitmap) {
         mBitmap = bitmap;
+    }
+
+    float lastX = -1, lastY = -1;
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        if (event != null) {
+            switch (event.getAction()) {
+                case MotionEvent.ACTION_MOVE:
+                    float x = event.getX();
+                    float y = event.getY();
+                    // y
+                    boolean isEgde = false;
+                    if (Math.abs(y - lastY) > 3) {
+                        if (y - lastY > 0) { // down
+                            for (int i=1; i<mCircleVerticesData.length; i+=2) {
+                                if (mCircleVerticesData[i] - 0.01 < -1) {
+                                    isEgde = true;
+                                    break;
+                                }
+                            }
+
+                            if (isEgde) {
+                                mCircleVerticesData[1] = -1;
+                                mCircleVerticesData[3] = -1;
+                                mCircleVerticesData[5] = -1+eyeHeight;
+                                mCircleVerticesData[7] = -1+eyeHeight;
+                            } else {
+                                mCircleVerticesData[1] -= 0.01;
+                                mCircleVerticesData[3] -= 0.01;
+                                mCircleVerticesData[5] -= 0.01;
+                                mCircleVerticesData[7] -= 0.01;
+                            }
+                        } else { // up
+
+                        }
+
+                        requestRender();
+                    }
+
+
+
+                    // x
+                    if (Math.abs(x - lastX) > 3) {
+                        if (x - lastX > 0) { // right
+
+                        } else { // left
+
+                        }
+                    }
+
+                    break;
+
+                case MotionEvent.ACTION_DOWN:
+                    lastX = event.getX();
+                    lastY = event.getY();
+                    break;
+                case MotionEvent.ACTION_UP:
+                    break;
+                case MotionEvent.ACTION_CANCEL:
+                    break;
+            }
+
+            return true;
+        } else {
+            return super.onTouchEvent(event);
+        }
     }
 }

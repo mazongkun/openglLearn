@@ -161,7 +161,7 @@ public class Utils {
             }
             tID = textureID;
         }
-        bitmap.recycle();
+//        bitmap.recycle();
         return tID;
     }
 }
