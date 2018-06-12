@@ -14,13 +14,13 @@ import android.view.MotionEvent;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
-import java.util.ArrayList;
-import java.util.Iterator;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
 public class MyGLSurfaceView extends GLSurfaceView implements GLSurfaceView.Renderer {
+    final String TAG = getClass().getSimpleName();
+
     String vertexShader;
     String fragmentShader;
 
@@ -259,9 +259,10 @@ init =false;
                     // y
                     boolean isEgde = false;
                     if (Math.abs(y - lastY) > 3) {
+                        float dis = Math.abs(y - lastY) * 0.0015f;
                         if (y - lastY > 0) { // down
                             for (int i=1; i<mCircleVerticesData.length; i+=2) {
-                                if (mCircleVerticesData[i] - 0.01 < -1) {
+                                if (mCircleVerticesData[i] - dis < -1) {
                                     isEgde = true;
                                     break;
                                 }
@@ -273,14 +274,14 @@ init =false;
                                 mCircleVerticesData[5] = -1+eyeHeight;
                                 mCircleVerticesData[7] = -1+eyeHeight;
                             } else {
-                                mCircleVerticesData[1] -= 0.01;
-                                mCircleVerticesData[3] -= 0.01;
-                                mCircleVerticesData[5] -= 0.01;
-                                mCircleVerticesData[7] -= 0.01;
+                                mCircleVerticesData[1] -= dis;
+                                mCircleVerticesData[3] -= dis;
+                                mCircleVerticesData[5] -= dis;
+                                mCircleVerticesData[7] -= dis;
                             }
                         } else { // up
                             for (int i=1; i<mCircleVerticesData.length; i+=2) {
-                                if (mCircleVerticesData[i] + 0.01 > 1) {
+                                if (mCircleVerticesData[i] + dis > 1) {
                                     isEgde = true;
                                     break;
                                 }
@@ -292,10 +293,10 @@ init =false;
                                 mCircleVerticesData[5] = 1-eyeHeight;
                                 mCircleVerticesData[7] = 1-eyeHeight;
                             } else {
-                                mCircleVerticesData[1] += 0.01;
-                                mCircleVerticesData[3] += 0.01;
-                                mCircleVerticesData[5] += 0.01;
-                                mCircleVerticesData[7] += 0.01;
+                                mCircleVerticesData[1] += dis;
+                                mCircleVerticesData[3] += dis;
+                                mCircleVerticesData[5] += dis;
+                                mCircleVerticesData[7] += dis;
                             }
                         }
                     }
@@ -303,9 +304,10 @@ init =false;
                     // x
                     isEgde = false;
                     if (Math.abs(x - lastX) > 3) {
+                        float dis = Math.abs(x - lastX) * 0.0015f * eyeWidth/eyeHeight;
                         if (x - lastX > 0) { // right
                             for (int i=0; i<mCircleVerticesData.length; i+=2) {
-                                if (mCircleVerticesData[i] + 0.01 > 1) {
+                                if (mCircleVerticesData[i] + dis > 1) {
                                     isEgde = true;
                                     break;
                                 }
@@ -317,14 +319,14 @@ init =false;
                                 mCircleVerticesData[4] = 1-eyeWidth;
                                 mCircleVerticesData[6] = 1;
                             } else {
-                                mCircleVerticesData[0] += 0.01;
-                                mCircleVerticesData[2] += 0.01;
-                                mCircleVerticesData[4] += 0.01;
-                                mCircleVerticesData[6] += 0.01;
+                                mCircleVerticesData[0] += dis;
+                                mCircleVerticesData[2] += dis;
+                                mCircleVerticesData[4] += dis;
+                                mCircleVerticesData[6] += dis;
                             }
                         } else { // left
                             for (int i=0; i<mCircleVerticesData.length; i+=2) {
-                                if (mCircleVerticesData[i] - 0.01 < -1) {
+                                if (mCircleVerticesData[i] - dis < -1) {
                                     isEgde = true;
                                     break;
                                 }
@@ -336,15 +338,16 @@ init =false;
                                 mCircleVerticesData[4] = -1+eyeWidth;
                                 mCircleVerticesData[6] = -1;
                             } else {
-                                mCircleVerticesData[0] -= 0.01;
-                                mCircleVerticesData[2] -= 0.01;
-                                mCircleVerticesData[4] -= 0.01;
-                                mCircleVerticesData[6] -= 0.01;
+                                mCircleVerticesData[0] -= dis;
+                                mCircleVerticesData[2] -= dis;
+                                mCircleVerticesData[4] -= dis;
+                                mCircleVerticesData[6] -= dis;
                             }
                         }
                     }
                     requestRender();
-
+                    lastX = event.getX();
+                    lastY = event.getY();
                     break;
 
                 case MotionEvent.ACTION_DOWN:
