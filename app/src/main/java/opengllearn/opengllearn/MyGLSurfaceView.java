@@ -215,6 +215,7 @@ init =false;
         Bitmap centerBitmap = BitmapUtil.getBitmapWithDrawable(drawable);
 
         mCircleTexID = Utils.gen2DTexture(mCircleTexID, centerBitmap, false);
+//        mTexID = Utils.gen2DTexture(mTexID, centerBitmap, false);
 
         circleVerticesBuf = ByteBuffer.allocateDirect(mCircleVerticesData.length*4)
                 .order(ByteOrder.nativeOrder()).asFloatBuffer();
