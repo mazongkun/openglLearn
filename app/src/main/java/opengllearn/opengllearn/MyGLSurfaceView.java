@@ -47,6 +47,8 @@ public class MyGLSurfaceView extends GLSurfaceView implements GLSurfaceView.Rend
     float posX;
     float posY;
 
+    float vertexWidth;
+    float vertexHeight;
     float eyeWidth;
     float eyeHeight;
     float[] lastEyePos = new float[4*2];
@@ -189,15 +191,15 @@ init =false;
         int height = mBitmap.getHeight();
 
         if (width < height) {
-            eyeWidth  = 2 * showRatio;
-            eyeHeight = eyeWidth * height / width;
+            eyeWidth  = 2*Math.abs(mVerticesData[0]) * showRatio;
+            eyeHeight = 2*Math.abs(mVerticesData[1]) * showRatio * width / height;
             for (int i=0; i<mCircleVerticesData.length; i++) {
                 mCircleVerticesData[i] = (i%2==0) ?
                         showRatio * mVerticesData[i] : showRatio * mVerticesData[i]*width/height;
             }
         } else {
-            eyeHeight = 2 * showRatio;
-            eyeWidth  = eyeHeight * width / height;
+            eyeHeight = 2*Math.abs(mVerticesData[1]) * showRatio;
+            eyeWidth  = 2*Math.abs(mVerticesData[0]) * showRatio * height / width;
             for (int i=0; i<mCircleVerticesData.length; i++) {
                 mCircleVerticesData[i] = (i%2==1) ?
                         showRatio * mVerticesData[i] : showRatio * mVerticesData[i]*height/width;
@@ -277,22 +279,71 @@ init =false;
                                 mCircleVerticesData[7] -= 0.01;
                             }
                         } else { // up
+                            for (int i=1; i<mCircleVerticesData.length; i+=2) {
+                                if (mCircleVerticesData[i] + 0.01 > 1) {
+                                    isEgde = true;
+                                    break;
+                                }
+                            }
 
+                            if (isEgde) {
+                                mCircleVerticesData[1] = 1;
+                                mCircleVerticesData[3] = 1;
+                                mCircleVerticesData[5] = 1-eyeHeight;
+                                mCircleVerticesData[7] = 1-eyeHeight;
+                            } else {
+                                mCircleVerticesData[1] += 0.01;
+                                mCircleVerticesData[3] += 0.01;
+                                mCircleVerticesData[5] += 0.01;
+                                mCircleVerticesData[7] += 0.01;
+                            }
                         }
-
-                        requestRender();
                     }
-
-
 
                     // x
+                    isEgde = false;
                     if (Math.abs(x - lastX) > 3) {
                         if (x - lastX > 0) { // right
+                            for (int i=0; i<mCircleVerticesData.length; i+=2) {
+                                if (mCircleVerticesData[i] + 0.01 > 1) {
+                                    isEgde = true;
+                                    break;
+                                }
+                            }
 
+                            if (isEgde) {
+                                mCircleVerticesData[0] = 1-eyeWidth;
+                                mCircleVerticesData[2] = 1;
+                                mCircleVerticesData[4] = 1-eyeWidth;
+                                mCircleVerticesData[6] = 1;
+                            } else {
+                                mCircleVerticesData[0] += 0.01;
+                                mCircleVerticesData[2] += 0.01;
+                                mCircleVerticesData[4] += 0.01;
+                                mCircleVerticesData[6] += 0.01;
+                            }
                         } else { // left
+                            for (int i=0; i<mCircleVerticesData.length; i+=2) {
+                                if (mCircleVerticesData[i] - 0.01 < -1) {
+                                    isEgde = true;
+                                    break;
+                                }
+                            }
 
+                            if (isEgde) {
+                                mCircleVerticesData[0] = -1+eyeWidth;
+                                mCircleVerticesData[2] = -1;
+                                mCircleVerticesData[4] = -1+eyeWidth;
+                                mCircleVerticesData[6] = -1;
+                            } else {
+                                mCircleVerticesData[0] -= 0.01;
+                                mCircleVerticesData[2] -= 0.01;
+                                mCircleVerticesData[4] -= 0.01;
+                                mCircleVerticesData[6] -= 0.01;
+                            }
                         }
                     }
+                    requestRender();
 
                     break;
 
