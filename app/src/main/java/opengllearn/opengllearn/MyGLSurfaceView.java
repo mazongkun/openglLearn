@@ -51,7 +51,17 @@ public class MyGLSurfaceView extends GLSurfaceView implements GLSurfaceView.Rend
     float vertexHeight;
     float eyeWidth;
     float eyeHeight;
+    float[] center = {0, 0};
     float[] lastEyePos = new float[4*2];
+
+    float degree;
+    float dis;
+
+    onEyeMoveListener listener;
+
+    public interface onEyeMoveListener {
+        void onEyeMoved(float degree, float dis);
+    }
 
     private final float[] mScreenVerticesData = {
             -1f, -1f,
@@ -249,6 +259,10 @@ init =false;
         mBitmap = bitmap;
     }
 
+    public void setListener(onEyeMoveListener listener) {
+        this.listener = listener;
+    }
+
     float lastX = -1, lastY = -1;
     @Override
     public boolean onTouchEvent(MotionEvent event) {
@@ -349,6 +363,7 @@ init =false;
                     requestRender();
                     lastX = event.getX();
                     lastY = event.getY();
+                    calculateParams();
                     break;
 
                 case MotionEvent.ACTION_DOWN:
@@ -365,5 +380,12 @@ init =false;
         } else {
             return super.onTouchEvent(event);
         }
+    }
+
+    private void calculateParams() {
+        if (listener == null)
+            return;
+
+
     }
 }
