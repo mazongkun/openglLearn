@@ -394,7 +394,13 @@ init =false;
                 + mCircleVerticesData[3]
                 + mCircleVerticesData[5]
                 + mCircleVerticesData[7])/4;
-        float degree = (float) Math.atan2(1000*(eyeY-center[1])/mSurfaceHeight, 1000*(eyeX-center[0])/mSurfaceWidth);
-        Log.e(TAG, "degree=" + degree*180/Math.PI);
+        float degree = (float)(90-180/Math.PI*Math.atan2(1000*(eyeY-center[1])/mSurfaceHeight, 1000*(eyeX-center[0])/mSurfaceWidth));
+        degree = degree < 0 ? degree+360:degree;
+        Log.e(TAG, "param degree=" + degree);
+
+        float _x = eyeX-center[0];
+        float _y = eyeY-center[1];
+        float dis = (float) Math.sqrt(_x * _x + _y * _y)*110f;
+        Log.e(TAG, "param dis=" + dis);
     }
 }
