@@ -319,7 +319,7 @@ init =false;
                     // x
                     isEgde = false;
                     if (Math.abs(x - lastX) > 3) {
-                        float dis = Math.abs(x - lastX) * 0.0015f * eyeWidth/eyeHeight;
+                        float dis = Math.abs(x - lastX) * 0.0015f * mSurfaceHeight/mSurfaceWidth;
                         if (x - lastX > 0) { // right
                             for (int i=0; i<mCircleVerticesData.length; i+=2) {
                                 if (mCircleVerticesData[i] + dis > 1) {
@@ -383,9 +383,18 @@ init =false;
     }
 
     private void calculateParams() {
-        if (listener == null)
-            return;
+//        if (listener == null)
+//            return;
 
-
+        float eyeX = (mCircleVerticesData[0]
+                + mCircleVerticesData[2]
+                + mCircleVerticesData[4]
+                + mCircleVerticesData[6])/4;
+        float eyeY = (mCircleVerticesData[1]
+                + mCircleVerticesData[3]
+                + mCircleVerticesData[5]
+                + mCircleVerticesData[7])/4;
+        float degree = (float) Math.atan2(1000*(eyeY-center[1])/mSurfaceHeight, 1000*(eyeX-center[0])/mSurfaceWidth);
+        Log.e(TAG, "degree=" + degree*180/Math.PI);
     }
 }
